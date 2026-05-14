@@ -36,30 +36,52 @@ Target horizon: (state — e.g. 12-18 months)
 ## Financial Snapshot
 (Cite specific numbers from the Analyst's report.)
 
-## Market Position
-(From the Market Research findings.)
+## Competitive Analysis
+This section MUST contain three sub-parts drawn directly from the Market
+Research report. Do NOT use markdown tables — structured text only.
+
+### Financial Head-to-Head
+Reproduce the per-company financial blocks from the Market Research report
+(Revenue, Margins, P/E, FCF, Debt/Equity, Analyst Consensus — one block per
+company). Then write 4-5 "So What?" bullets: who leads on growth, margins,
+cheapest valuation, strongest balance sheet, analyst consensus vs. peers.
+Tag all figures [yfinance, live].
+
+### Product & Price Positioning
+For each competitor: competing segment(s), price range, key products, market
+share with source and month/year, core differentiator vs. the subject, main
+weakness. If market share was not found in search results say so explicitly.
+
+### Market Position Verdict
+State the verdict word (STRONG / DEFENSIBLE / VULNERABLE) from the research.
+Give the single biggest competitive threat and the single biggest advantage —
+each backed by a cited number or source from the Market Research report.
 
 ## Leadership Assessment
-(From the Leadership findings.)
+(From the Leadership findings — include CEO name, tenure, and one specific
+ metric that proves or disproves their track record.)
 
 ## Risk Assessment
-(Quote VaR/CVaR numbers from the Risk report. Summarise qualitative risks.)
+Quote the exact 95% and 99% 1-day VaR and CVaR figures from the Risk report.
+Then summarise the top 3 qualitative risks with severity tags.
 
 ## Key Catalysts
-(Upside drivers in the next 6-18 months.)
+(Upside drivers in the next 6-18 months — be specific, no vague assertions.)
 
 ## Bear Case
-(What would make this thesis wrong? Be honest.)
+(What would make this thesis wrong? Name at least one specific risk from the
+ Risk report and one competitive threat from the Market Research report.)
 
 ## Decision Summary
 (One paragraph. State the recommendation and the single most important reason.)
 
 Rules:
-  - Synthesise across the four reports. Do not just paste them.
+  - Synthesise across the four reports. Do not just paste them EXCEPT for
+    the financial scorecard table in Competitive Analysis — reproduce that verbatim.
   - Reconcile contradictions explicitly (e.g. "Analyst flags a stretched
     multiple but Market Research shows expanding moat — net call is...").
   - Cite specific numbers wherever possible.
-  - Length: 800-1500 words.
+  - Length: 1000-1800 words (scorecard table excluded from word count).
 """
 
 
@@ -69,12 +91,15 @@ You are a skeptical investment committee chair. Critique the memo below.
 Evaluate it on:
   1. Internal consistency — does the recommendation match the evidence?
   2. Use of data — are numbers cited specifically and correctly?
-  3. Source integration — are findings from all four research streams
+  3. Competitive analysis — does the memo include the full financial scorecard
+     table, named competitors with market share figures, and a product/price
+     comparison? Generic phrases like "faces competition from X" are failures.
+  4. Source integration — are findings from all four research streams
      (Analyst, Market Research, Leadership, Risk) reflected? Any gaps?
-  4. Contradictions — are tensions in the underlying research surfaced
+  5. Contradictions — are tensions in the underlying research surfaced
      and resolved, or papered over?
-  5. Bear case quality — is the downside taken seriously, or strawmanned?
-  6. Actionability — could a PM act on this, or is it hedged into mush?
+  6. Bear case quality — is the downside taken seriously, or strawmanned?
+  7. Actionability — could a PM act on this, or is it hedged into mush?
 
 Output format:
 

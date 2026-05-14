@@ -13,7 +13,7 @@ qualitative findings into a single risk briefing.
 
 import numpy as np
 
-from common import WEB_SEARCH_TOOL, claude_call, extract_text, fmt_pct
+from common import claude_call, extract_text, fmt_pct, run_searches
 
 
 def compute_var_cvar(returns: np.ndarray, last_close: float) -> dict:
@@ -94,58 +94,73 @@ def format_var_report(ticker: str, v: dict) -> str:
 RISK_SYSTEM = """\
 You are a senior risk analyst. You have two inputs:
 
-  1. Quantitative VaR/CVaR computed from the past two years of returns
-  2. Your own web search results on the company's qualitative risk factors
+  SOURCE A — Quantitative VaR/CVaR block
+    Computed from the past two years of actual return history.
+    Quote these numbers exactly — do not estimate or round them.
+    Tag as [yfinance, live].
 
-Use web search to investigate (last 12 months preferred):
-  - Regulatory / compliance issues
-  - Open litigation or settlements
-  - Supply chain or input-cost exposures
-  - Customer or geographic concentration
-  - Geopolitical exposure
-  - Sector-specific risks (cyclicality, tech disruption, etc.)
+  SOURCE B — Web Search Results
+    Real DuckDuckGo results collected moments ago, labelled [SEARCH: <query>].
+    Use these as your PRIMARY source for all qualitative risk claims.
+    Tag each claim with (Article Title, URL).
+    If a search returned nothing on a topic, state that explicitly.
 
-Then produce this structured briefing:
+  [training knowledge — verify]
+    Use ONLY for genuine gaps not covered by B. Flag every such claim.
+
+Produce this structured briefing:
 
 ## Quantitative Risk Profile
-(Interpret the VaR numbers. Is the company high or low volatility for its
-sector? Does historical VaR materially exceed parametric — i.e. fat tails?)
+Interpret the VaR numbers from SOURCE A. Is volatility high or low for the
+sector? Does historical VaR materially exceed parametric (fat tails)?
+Quote the exact 95% and 99% VaR and CVaR figures.
 
 ## Qualitative Risk Factors
-(Bullet list, each with a source citation and a severity tag: HIGH / MEDIUM / LOW)
+Bullet list from SOURCE B. Each bullet: risk name, evidence from search
+result (cite title + URL), severity tag HIGH / MEDIUM / LOW.
+Do not invent risks not found in the search results.
 
 ## Concentration & Dependency Risks
-(Customer, geography, supplier, single-product?)
+Customer, geography, supplier, product concentration — cite search sources.
 
 ## Risk Verdict
-ROUTINE / WATCH / ELEVATED — one line, then justify in 2-3 sentences.
+ROUTINE / WATCH / ELEVATED — one line.
+Then 2–3 sentences justifying it, each referencing a specific cited fact.
 
-Rules: cite every qualitative claim. Quote VaR numbers from the data block,
-do not estimate. Under 800 words.
+Rules: every qualitative claim needs a source. Under 900 words.
 """
 
 
 def run_risk(client, snapshot: dict) -> dict:
     var_metrics = compute_var_cvar(snapshot["returns"], snapshot["closes"][-1])
     var_report = format_var_report(snapshot["ticker"], var_metrics)
-    company_name = snapshot["info"].get("longName", snapshot["ticker"])
+    ticker = snapshot["ticker"]
+    company_name = snapshot["info"].get("longName", ticker)
 
-    user_msg = (
-        f"Risk analysis for {company_name} ({snapshot['ticker']}).\n\n"
-        f"{var_report}\n\n"
-        f"Now use web search to find qualitative risk factors from the last 12 months "
-        f"and produce the structured risk briefing."
-    )
+    queries = [
+        f"{company_name} {ticker} regulatory fine lawsuit 2024 2025",
+        f"{company_name} supply chain risk disruption 2024 2025",
+        f"{company_name} {ticker} geopolitical risk tariff 2024 2025",
+        f"{company_name} litigation settlement antitrust 2024 2025",
+        f"{company_name} {ticker} revenue concentration customer risk 2024",
+    ]
+    search_block = run_searches(queries, label="risk")
 
-    response = claude_call(
-        client,
-        RISK_SYSTEM,
-        user_msg,
-        tools=WEB_SEARCH_TOOL,
-        max_tokens=8000,
-    )
-    return {
-        "var_metrics": var_metrics,
-        "var_report": var_report,
-        "analysis": extract_text(response),
-    }
+    user_msg = f"""\
+Risk analysis for {company_name} ({ticker}).
+
+{'=' * 72}
+SOURCE A — QUANTITATIVE VAR/CVAR  [yfinance, live]
+{'=' * 72}
+{var_report}
+
+{'=' * 72}
+SOURCE B — WEB SEARCH RESULTS  [DuckDuckGo, collected now]
+{'=' * 72}
+{search_block}
+{'=' * 72}
+
+Produce the structured risk briefing using both sources above.
+"""
+    response = claude_call(client, RISK_SYSTEM, user_msg, max_tokens=8000)
+    return {"var_metrics": var_metrics, "var_report": var_report, "analysis": extract_text(response)}

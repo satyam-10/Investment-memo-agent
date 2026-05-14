@@ -3,3 +3,4 @@ yfinance>=0.2.40
 python-dotenv>=1.0.0
 numpy>=1.26.0
 pandas>=2.0.0
+ddgs>=6.0.0
